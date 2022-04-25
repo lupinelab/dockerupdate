@@ -1,35 +1,51 @@
 import argparse
 from os import listdir
 import subprocess
-
+import docker
 
 parser = argparse.ArgumentParser(description='Update docker images and rebuild containers')
 parser.add_argument("-s", "--single", type=str, nargs=1, help="update single image/container")
 args = parser.parse_args()
 
+docker_client = docker.from_env()
 
 def update(docker):
     print(f"Stopping {docker} container:")
-    subprocess.run(["docker", "stop", docker])
+    stop = subprocess.run(["docker", "stop", docker], capture_output=True, text=True)
+    print(stop.stdout)
     print(f"Removing {docker} container:")
-    subprocess.run(["docker", "rm", docker])
+    remove_container = subprocess.run(["docker", "rm", docker], capture_output=True, text=True)
+    print(remove_container.stdout)
     print(f"Removing current {docker} image:")
     with open(f"/home/jedrw/dockercreate/{docker}", "r") as dockercreatefile:
         dockerregistry = (dockercreatefile.readlines()[-1].strip("\n").strip())
-    subprocess.run(["docker", "rmi", dockerregistry])
+    remove_image = subprocess.run(["docker", "rmi", dockerregistry], capture_output=True, text=True)
+    print(remove_image.stdout)
     print(f"Pulling latest {docker} image:")
-    subprocess.run(["docker", "pull", dockerregistry])
+    pull = subprocess.run(["docker", "pull", dockerregistry], capture_output=True, text=True)
+    print(pull.stdout)
     print(f"Creating {docker} container:")
-    subprocess.run(["sh", f"/home/jedrw/dockercreate/{docker}"])
+    create = subprocess.run(["sh", f"/home/jedrw/dockercreate/{docker}"], capture_output=True, text=True)
+    print(create.stdout)
     print(f"Starting {docker} container:")
-    subprocess.run(["docker", "start", docker])
+    start = subprocess.run(["docker", "start", docker], capture_output=True, text=True)
+    print(start.stdout)
     print(f"{docker} status:")
-    subprocess.run("docker ps --filter name=" + docker + " --filter status=running", shell=True)
-
+    container = docker_client.containers.get(docker)
+    state = container.attrs["State"]
+    print(state["Status"])
 
 if args.single:
     update(args.single[0])
+    print(f"{docker} status:")
+    container = docker_client.containers.get(docker)
+    state = container.attrs["State"]
+    print(state["Status"])
 else:
     dockers = listdir("/home/jedrw/dockercreate")
     for docker in dockers:
         update(docker)
+        print(f"{docker} status:")
+        container = docker_client.containers.get(docker)
+        state = container.attrs["State"]
+        print(state["Status"])
