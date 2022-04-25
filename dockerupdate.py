@@ -23,7 +23,8 @@ def update(docker):
     subprocess.run(["sh", f"/home/jedrw/dockercreate/{docker}"])
     print(f"Starting {docker} container:")
     subprocess.run(["docker", "start", docker])
-    print(f"{docker} has started!")
+    print(f"{docker} status:")
+    subprocess.run("docker ps --filter name=" + docker + " --filter status=running", shell=True)
 
 
 if args.single:
