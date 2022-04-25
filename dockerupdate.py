@@ -2,9 +2,11 @@ import argparse
 from os import listdir
 import subprocess
 
-parser = argparse.ArgumentParser(description='Update all docker images and rebuild containers')
-parser.add_argument("-s", "--single", type=str, nargs=1, help="update single container/image", metavar="CONTAINER")
+
+parser = argparse.ArgumentParser(description='Update docker images and rebuild containers')
+parser.add_argument("-s", "--single", type=str, nargs=1, help="update single image/container")
 args = parser.parse_args()
+
 
 def update(docker):
     print(f"Stopping {docker} container:")
@@ -15,24 +17,13 @@ def update(docker):
     with open(f"/home/jedrw/dockercreate/{docker}", "r") as dockercreatefile:
         dockerregistry = (dockercreatefile.readlines()[-1].strip("\n").strip())
     subprocess.run(["docker", "rmi", dockerregistry])
-    if docker == "vmupdown":
-        print(f"Removing base image:")
-        subprocess.run(["docker", "rmi", "ubuntu/apache2"])
-        print(f"Building {docker} image:")
-        subprocess.run(["docker", "build", "-t", "lupinelab/vmupdown", "/home/jedrw/docker/vmupdown"])
-        print(f"Creating {docker} container:")
-        subprocess.run(["sh", f"/home/jedrw/dockercreate/{docker}"])
-        print(f"Starting {docker} container:")
-        subprocess.run(["docker", "start", docker])
-        print(f"{docker} has started!")
-    else:
-        print(f"Pulling latest {docker} image:")
-        subprocess.run(["docker", "pull", dockerregistry])
-        print(f"Creating {docker} container:")
-        subprocess.run(["sh", f"/home/jedrw/dockercreate/{docker}"])
-        print(f"Starting {docker} container:")
-        subprocess.run(["docker", "start", docker])
-        print(f"{docker} has started!")
+    print(f"Pulling latest {docker} image:")
+    subprocess.run(["docker", "pull", dockerregistry])
+    print(f"Creating {docker} container:")
+    subprocess.run(["sh", f"/home/jedrw/dockercreate/{docker}"])
+    print(f"Starting {docker} container:")
+    subprocess.run(["docker", "start", docker])
+    print(f"{docker} has started!")
 
 
 if args.single:
