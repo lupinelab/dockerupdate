@@ -1,13 +1,14 @@
 import argparse
 from os import listdir
 import subprocess
-import docker
+import docker as dkr
 
 parser = argparse.ArgumentParser(description='Update docker images and rebuild containers')
 parser.add_argument("-s", "--single", type=str, nargs=1, help="update single image/container")
 args = parser.parse_args()
 
-docker_client = docker.from_env()
+docker_client = dkr.from_env()
+
 
 def update(docker):
     print(f"Stopping {docker} container:")
@@ -30,15 +31,12 @@ def update(docker):
     print(f"Starting {docker} container:")
     start = subprocess.run(["docker", "start", docker], capture_output=True, text=True)
     print(start.stdout)
-    print(f"{docker} status:")
-    container = docker_client.containers.get(docker)
-    state = container.attrs["State"]
-    print(state["Status"])
+
 
 if args.single:
     update(args.single[0])
-    print(f"{docker} status:")
-    container = docker_client.containers.get(docker)
+    print(f"{args.single[0]} status:")
+    container = docker_client.containers.get(args.single[0])
     state = container.attrs["State"]
     print(state["Status"])
 else:
