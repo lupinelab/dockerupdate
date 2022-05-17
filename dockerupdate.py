@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser(description='Update docker images and rebuild c
 parser.add_argument("-s", "--single", type=str, nargs=1, help="update single image/container")
 args = parser.parse_args()
 
-username = os.getlogin()
+username = getlogin()
 docker_client = dkr.from_env()
 
 
