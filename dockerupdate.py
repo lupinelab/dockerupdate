@@ -48,7 +48,7 @@ if args.single:
     state = container.attrs["State"]
     print(state["Status"])
 else:
-    dockers = listdir("/home/jedrw/dockercreate")
+    dockers = listdir(f"/home/{username}/dockercreate")
     for docker in dockers:
         update(docker)
         print(f"{docker} status:")
