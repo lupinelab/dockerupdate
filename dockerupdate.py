@@ -21,6 +21,13 @@ def update(docker):
         dockerregistry = (dockercreatefile.readlines()[-1].strip("\n").strip())
     remove_image = subprocess.run(["docker", "rmi", dockerregistry], capture_output=True, text=True)
     print(remove_image.stdout)
+    if docker in listdir("/home/jedrw/dockerbuild"):
+        print(f"Building {docker} image:")
+        build_image = subprocess.run(["docker", "build", f"/home/jedrw/dockerbuild/{docker}/", "-t", f"{dockerregistry}:latest"], capture_output=True, text=True)
+        print(build_image.stdout)
+        print(f"Pushing {docker} image:")
+        push_image = subprocess.run(["docker", "push", f"{dockerregistry}:latest"], capture_output=True, text=True)
+        print(push_image.stdout)
     print(f"Pulling latest {docker} image:")
     pull = subprocess.run(["docker", "pull", dockerregistry], capture_output=True, text=True)
     print(pull.stdout)
@@ -37,8 +44,8 @@ def update(docker):
 
 if args.single:
     update(args.single[0])
-    print(f"{docker} status:")
-    container = docker_client.containers.get(docker)
+    print(f"{args.single[0]} status:")
+    container = docker_client.containers.get(args.single[0])
     state = container.attrs["State"]
     print(state["Status"])
 else:
