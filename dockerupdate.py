@@ -35,7 +35,7 @@ def update(docker):
     print(pull.stdout)
     print(f"Creating {docker} container:")
     create = subprocess.run(["sh", f"/home/{username}/dockercreate/{docker}"], capture_output=True, text=True)
-    print(create.stdout)
+    print(create.stdout)   
     print(f"Starting {docker} container:")
     start = subprocess.run(["docker", "start", docker], capture_output=True, text=True)
     print(start.stdout)
