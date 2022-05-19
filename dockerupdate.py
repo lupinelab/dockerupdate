@@ -54,4 +54,4 @@ else:
         print(f"{docker} status:")
         container = docker_client.containers.get(docker)
         state = container.attrs["State"]
-        print(state["Status"])
+        print(state["Status"] + "\n")
