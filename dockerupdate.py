@@ -3,21 +3,37 @@ from os import listdir, getlogin
 import subprocess
 import docker as dkr
 
-parser = argparse.ArgumentParser(description='Update docker images and rebuild containers')
-parser.add_argument("-s", "--single", type=str, nargs=1, help="update single image/container")
-args = parser.parse_args()
-
+parser = argparse.ArgumentParser(description='Update docker images or rebuild container(s)')
+parser.add_argument("-i", "--image", type=str, nargs='?', const="all", help="update image and recreate container")
+parser.add_argument("-c", "--container", type=str, nargs='?', const="all", help="recreate container")
+args = vars(parser.parse_args())
 username = getlogin()
 docker_client = dkr.from_env()
+dockers = listdir(f"/home/{username}/dockercreate")
+
+if not any(args.values()):
+    parser.error('No arguments provided.')
 
 
-def update(docker):
+def remove_container(docker):
     print(f"Stopping {docker} container:")
     stop = subprocess.run(["docker", "stop", docker], capture_output=True, text=True)
     print(stop.stdout)
     print(f"Removing {docker} container:")
     remove_container = subprocess.run(["docker", "rm", docker], capture_output=True, text=True)
     print(remove_container.stdout)
+
+
+def create_container(docker):   
+    print(f"Creating {docker} container:")
+    create = subprocess.run(["sh", f"/home/{username}/dockercreate/{docker}"], capture_output=True, text=True)
+    print(create.stdout)   
+    print(f"Starting {docker} container:")
+    start = subprocess.run(["docker", "start", docker], capture_output=True, text=True)
+    print(start.stdout)
+
+
+def update_image(docker):
     print(f"Removing current {docker} image:")
     with open(f"/home/{username}/dockercreate/{docker}", "r") as dockercreatefile:
         dockerregistry = (dockercreatefile.readlines()[-1].strip("\n").strip())
@@ -33,25 +49,45 @@ def update(docker):
     print(f"Pulling latest {docker} image:")
     pull = subprocess.run(["docker", "pull", dockerregistry], capture_output=True, text=True)
     print(pull.stdout)
-    print(f"Creating {docker} container:")
-    create = subprocess.run(["sh", f"/home/{username}/dockercreate/{docker}"], capture_output=True, text=True)
-    print(create.stdout)   
-    print(f"Starting {docker} container:")
-    start = subprocess.run(["docker", "start", docker], capture_output=True, text=True)
-    print(start.stdout)
 
 
-if args.single:
-    update(args.single[0])
-    print(f"{args.single[0]} status:")
-    container = docker_client.containers.get(args.single[0])
+def get_status(docker):
+    print(f"{docker} status:")
+    container = docker_client.containers.get(docker)
     state = container.attrs["State"]
     print(state["Status"])
-else:
-    dockers = listdir(f"/home/{username}/dockercreate")
-    for docker in dockers:
-        update(docker)
-        print(f"{docker} status:")
-        container = docker_client.containers.get(docker)
-        state = container.attrs["State"]
-        print(state["Status"] + "\n")
+
+if args.container:
+    if args.container == "all":
+        for docker in dockers:
+            remove_container(docker)
+            create_container(docker)
+            get_status(docker)
+    else:
+        remove_container(args.container)
+        create_container(args.container)
+        get_status(args.container)
+
+elif args.image:
+    if args.image == "all":
+        for docker in dockers:
+            remove_container(docker)
+            update_image(docker)
+            create_container(docker)
+            get_status(docker)
+    else:
+        remove_container(args.image)
+        update_image(args.image)
+        create_container(args.image)
+        get_status(args.image)
+
+# elif args.all:
+#     dockers = listdir(f"/home/{username}/dockercreate")
+#     for docker in dockers:
+#         remove_container(args.image[0])
+#         update_image(args.image[0])
+#         create_container(args.image[0])
+#         print(f"{docker} status:")
+#         container = docker_client.containers.get(docker)
+#         state = container.attrs["State"]
+#         print(state["Status"] + "\n")
