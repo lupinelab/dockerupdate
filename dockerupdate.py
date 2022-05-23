@@ -6,13 +6,10 @@ import docker as dkr
 parser = argparse.ArgumentParser(description='Update docker images or rebuild container(s)')
 parser.add_argument("-i", "--image", type=str, nargs='?', const="all", help="update image and recreate container")
 parser.add_argument("-c", "--container", type=str, nargs='?', const="all", help="recreate container")
-args = vars(parser.parse_args())
+args = parser.parse_args()
 username = getlogin()
 docker_client = dkr.from_env()
 dockers = listdir(f"/home/{username}/dockercreate")
-
-if not any(args.values()):
-    parser.error('No arguments provided.')
 
 
 def remove_container(docker):
@@ -80,14 +77,3 @@ elif args.image:
         update_image(args.image)
         create_container(args.image)
         get_status(args.image)
-
-# elif args.all:
-#     dockers = listdir(f"/home/{username}/dockercreate")
-#     for docker in dockers:
-#         remove_container(args.image[0])
-#         update_image(args.image[0])
-#         create_container(args.image[0])
-#         print(f"{docker} status:")
-#         container = docker_client.containers.get(docker)
-#         state = container.attrs["State"]
-#         print(state["Status"] + "\n")
