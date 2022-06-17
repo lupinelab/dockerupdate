@@ -34,7 +34,8 @@ def update_image(docker):
     print(f"Removing current {docker} image:")
     with open(f"/home/{username}/dockercreate/{docker}", "r") as dockercreatefile:
         dockerregistry = (dockercreatefile.readlines()[-1].strip("\n").strip())
-        imageid = subprocess.run(["docker", "images", "-q", dockerregistry], capture_output=True, text=True).stdout
+        imageid = subprocess.run(["docker", "images", "-q", dockerregistry], capture_output=True, text=True).stdout.strip("\n")
+    print(dockerregistry, imageid)
     remove_image = subprocess.run(["docker", "rmi", "-f", imageid], capture_output=True, text=True)
     print(remove_image.stdout)
     if docker in listdir(f"/home/{username}/dockerbuild"):
