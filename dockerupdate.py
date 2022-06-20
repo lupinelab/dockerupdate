@@ -65,6 +65,7 @@ if args.container:
             print('\n')
         print('Status Summary:')
         for docker in dockers:
+            print(f"{docker} status:")
             get_status(docker)
 
     else:
@@ -80,8 +81,10 @@ elif args.image:
             update_image(docker)
             create_container(docker)
             print(f"{docker} status:")
+        print('Status Summary:')
+        for docker in dockers:
+            print(f"{docker} status:")
             get_status(docker)
-            print('\n')
     else:
         remove_container(args.image)
         update_image(args.image)
