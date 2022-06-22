@@ -1,0 +1,3 @@
+#/usr/bin/env bash
+
+complete -C 'makelist() { ls /home/jedrw/dockercreate; }; filter() { makelist | grep "^$2" | sort -u; }; filter' dockerupdate
