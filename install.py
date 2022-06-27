@@ -3,8 +3,6 @@ import os
 import shutil
 import stat
 
-
-
 def install_script():
     # make dockerupdate executeable and move to /usr/local/bin
     os.chmod('dist/dockerupdate', os.stat('dist/dockerupdate').st_mode | stat.S_IXOTH)
