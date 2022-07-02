@@ -81,6 +81,7 @@ elif args.image:
             update_image(docker)
             create_container(docker)
             get_status(docker)
+            print('\n')
         print('Status Summary:')
         for docker in dockers:
             get_status(docker)
