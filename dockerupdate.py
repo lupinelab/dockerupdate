@@ -53,25 +53,25 @@ def update_image(docker):
 def get_status(docker):
     container = docker_client.containers.get(docker)
     state = container.attrs["State"]
-    print(state["Status"])
+    print(f"""
+    {docker} status:
+    {state["Status"]}
+    """)
 
 if args.container:
     if args.container == "all":
         for docker in dockers:
             remove_container(docker)
             create_container(docker)
-            print(f"{docker} status:")
             get_status(docker)
             print('\n')
         print('Status Summary:')
         for docker in dockers:
-            print(f"{docker} status:")
             get_status(docker)
 
     else:
         remove_container(args.container)
         create_container(args.container)
-        print(f"{args.container} status:")
         get_status(args.container)
 
 elif args.image:
@@ -80,14 +80,12 @@ elif args.image:
             remove_container(docker)
             update_image(docker)
             create_container(docker)
-            print(f"{docker} status:")
+            get_status(docker)
         print('Status Summary:')
         for docker in dockers:
-            print(f"{docker} status:")
             get_status(docker)
     else:
         remove_container(args.image)
         update_image(args.image)
         create_container(args.image)
-        print(f"{args.image} status:")
         get_status(args.image)
