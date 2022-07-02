@@ -53,7 +53,7 @@ def update_image(docker):
 def get_status(docker):
     container = docker_client.containers.get(docker)
     state = container.attrs["State"]
-    print(detent(f"""
+    print(dedent(f"""
     {docker} status:
     {state["Status"]}
     """))
