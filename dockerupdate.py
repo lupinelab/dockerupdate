@@ -15,10 +15,10 @@ containers = listdir(f"/home/{username}/dockercreate")
 def remove_container(docker):
     print(f"Stopping {docker} container:")
     stop = subprocess.run(["docker", "stop", docker], capture_output=True, text=True)
-    print(stop.stdout)
+    print("OK")
     print(f"Removing {docker} container:")
     remove_container = subprocess.run(["docker", "rm", docker], capture_output=True, text=True)
-    print(remove_container.stdout)
+    print("OK")
 
 
 def create_container(docker):   
@@ -27,7 +27,7 @@ def create_container(docker):
     print(create.stdout)   
     print(f"Starting {docker} container:")
     start = subprocess.run(["docker", "start", docker], capture_output=True, text=True)
-    print(start.stdout)
+    print("OK")
 
 
 def update_image(docker):
@@ -53,14 +53,15 @@ def update_image(docker):
 def get_status(docker):
     container = docker_client.containers.get(docker)
     state = container.attrs["State"]
-    print(f"""
+    print(detent(f"""
     {docker} status:
     {state["Status"]}
-    """)
+    """))
 
 if args.container:
     if args.container == "all":
         for container in containers:
+            print(container.upper())
             remove_container(container)
             create_container(container)
             get_status(container)
