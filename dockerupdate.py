@@ -9,7 +9,7 @@ parser.add_argument("-c", "--container", type=str, nargs='?', const="all", help=
 args = parser.parse_args()
 username = getlogin()
 docker_client = dkr.from_env()
-dockers = listdir(f"/home/{username}/dockercreate")
+containers = listdir(f"/home/{username}/dockercreate")
 
 
 def remove_container(docker):
@@ -60,14 +60,14 @@ def get_status(docker):
 
 if args.container:
     if args.container == "all":
-        for docker in dockers:
-            remove_container(docker)
-            create_container(docker)
-            get_status(docker)
+        for container in containers:
+            remove_container(container)
+            create_container(container)
+            get_status(container)
             print('\n')
         print('Status Summary:')
-        for docker in dockers:
-            get_status(docker)
+        for container in containers:
+            get_status(container)
 
     else:
         remove_container(args.container)
@@ -76,15 +76,15 @@ if args.container:
 
 elif args.image:
     if args.image == "all":
-        for docker in dockers:
-            remove_container(docker)
-            update_image(docker)
-            create_container(docker)
-            get_status(docker)
+        for container in containers:
+            remove_container(container)
+            update_image(container)
+            create_container(container)
+            get_status(container)
             print('\n')
         print('Status Summary:')
-        for docker in dockers:
-            get_status(docker)
+        for container in containers:
+            get_status(container)
     else:
         remove_container(args.image)
         update_image(args.image)
