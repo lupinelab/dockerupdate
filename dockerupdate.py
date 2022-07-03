@@ -63,11 +63,12 @@ if args.container:
             print(container.upper())
             print("=" * len(container.upper())) 
             remove_container(container)
-            create_container(container)
-        print(dedent("""\nStatus Summary
-        =============="""))
+            create_container(dedent(f"""{container}
+            """))
+        print("\nStatus Summary")
+        print("--------------")
         for container in containers:
-            print(f"{container}: {get_status(container)}")
+            print(f"{container}:\t{get_status(container)}")
     else:
         print(args.container.upper())
         print("=" * len(args.container.upper()))
@@ -81,11 +82,12 @@ elif args.image:
             print("=" * len(container.upper())) 
             remove_container(container)
             update_image(container)
-            create_container(container)
-        print(dedent("""\nStatus Summary
-        =============="""))
+            create_container(dedent(f"""{container}
+            """))
+        print("\nStatus Summary")
+        print("==============")
         for container in containers:
-            print(f"{container}: {get_status(container)}")
+            print(f"{container}:\t{get_status(container)}")
     else:
         print(args.image.upper())
         print("=" * len(args.image.upper()))
