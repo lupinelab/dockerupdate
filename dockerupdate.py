@@ -17,10 +17,10 @@ dockerfiles = listdir(f"/home/{username}/dockerbuild")
 def remove_container(container):
     print(f"Stopping {container} container:")
     stop = subprocess.run(["docker", "stop", container], capture_output=True, text=True)
-    print("OK")
+    print("Success")
     print(f"Removing {container} container:")
     remove_container = subprocess.run(["docker", "rm", container], capture_output=True, text=True)
-    print("OK")
+    print("Success")
 
 
 def create_container(container):   
@@ -29,7 +29,7 @@ def create_container(container):
     print(create.stdout.strip())   
     print(f"Starting {container} container:")
     start = subprocess.run(["docker", "start", container], capture_output=True, text=True)
-    print("OK")
+    print(get_status(container))
 
 
 def update_image(container):
@@ -64,11 +64,7 @@ if args.container:
             print("=" * len(container.upper())) 
             remove_container(container)
             create_container(container)
-            print("\nStatus")
-            print("------")
-            print(dedent(f"""{get_status(container)}
-            """))
-        print(dedent("""Status Summary
+        print(dedent("""\nStatus Summary
         =============="""))
         for container in containers:
             print(f"{container}: {get_status(container)}")
@@ -77,9 +73,6 @@ if args.container:
         print("=" * len(args.container.upper()))
         remove_container(args.container)
         create_container(args.container)
-        print("\nStatus")
-        print("------")
-        print(get_status(args.container))
 
 elif args.image:
     if args.image == "all":
@@ -89,11 +82,7 @@ elif args.image:
             remove_container(container)
             update_image(container)
             create_container(container)
-            print("\nStatus")
-            print("------")
-            print(dedent(f"""{get_status(container)}
-            """))
-        print(dedent("""Status Summary
+        print(dedent("""\nStatus Summary
         =============="""))
         for container in containers:
             print(f"{container}: {get_status(container)}")
@@ -103,6 +92,3 @@ elif args.image:
         remove_container(args.image)
         update_image(args.image)
         create_container(args.image)
-        print("\nStatus")
-        print("------")
-        print(get_status(args.image))
