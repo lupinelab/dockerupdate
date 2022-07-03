@@ -1,6 +1,7 @@
 import argparse
 from os import listdir, getlogin
 import subprocess
+from textwrap import dedent
 import docker as dkr
 
 parser = argparse.ArgumentParser(description='Update docker images or rebuild container(s)')
@@ -10,84 +11,98 @@ args = parser.parse_args()
 username = getlogin()
 docker_client = dkr.from_env()
 containers = listdir(f"/home/{username}/dockercreate")
+dockerfiles = listdir(f"/home/{username}/dockerbuild")
 
 
-def remove_container(docker):
-    print(f"Stopping {docker} container:")
-    stop = subprocess.run(["docker", "stop", docker], capture_output=True, text=True)
+def remove_container(container):
+    print(f"Stopping {container} container:")
+    stop = subprocess.run(["docker", "stop", container], capture_output=True, text=True)
     print("OK")
-    print(f"Removing {docker} container:")
-    remove_container = subprocess.run(["docker", "rm", docker], capture_output=True, text=True)
+    print(f"Removing {container} container:")
+    remove_container = subprocess.run(["docker", "rm", container], capture_output=True, text=True)
     print("OK")
 
 
-def create_container(docker):   
-    print(f"Creating {docker} container:")
-    create = subprocess.run(["sh", f"/home/{username}/dockercreate/{docker}"], capture_output=True, text=True)
+def create_container(container):   
+    print(f"Creating {container} container:")
+    create = subprocess.run(["sh", f"/home/{username}/dockercreate/{container}"], capture_output=True, text=True)
     print(create.stdout)   
-    print(f"Starting {docker} container:")
-    start = subprocess.run(["docker", "start", docker], capture_output=True, text=True)
+    print(f"Starting {container} container:")
+    start = subprocess.run(["docker", "start", container], capture_output=True, text=True)
     print("OK")
 
 
-def update_image(docker):
-    print(f"Removing current {docker} image:")
-    with open(f"/home/{username}/dockercreate/{docker}", "r") as dockercreatefile:
-        dockerregistry = (dockercreatefile.readlines()[-1].strip("\n").strip())
-        imageid = subprocess.run(["docker", "images", "-q", dockerregistry], capture_output=True, text=True).stdout.strip("\n")
-    print(f"{dockerregistry} - {imageid}:")
+def update_image(container):
+    print(f"Removing current {container} image:")
+    with open(f"/home/{username}/dockercreate/{container}", "r") as dockercreatefile:
+        registry = (dockercreatefile.readlines()[-1].strip("\n").strip())
+        imageid = subprocess.run(["docker", "images", "-q", registry], capture_output=True, text=True).stdout.strip("\n")
+    print(f"{registry} - {imageid}:")
     remove_image = subprocess.run(["docker", "rmi", "-f", imageid], capture_output=True, text=True)
     print(remove_image.stdout)
-    if docker in listdir(f"/home/{username}/dockerbuild"):
-        print(f"Building {docker} image:")
-        build_image = subprocess.run(["docker", "build", f"/home/{username}/dockerbuild/{docker}/", "-t", f"{dockerregistry}:latest"], capture_output=True, text=True)
+    if container in builddir:
+        print(f"Building {container} image:")
+        build_image = subprocess.run(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", f"{registry}:latest"], capture_output=True, text=True)
         print(build_image.stdout)
-        print(f"Pushing {docker} image:")
-        push_image = subprocess.run(["docker", "push", f"{dockerregistry}:latest"], capture_output=True, text=True)
+        print(f"Pushing {container} image:")
+        push_image = subprocess.run(["docker", "push", f"{registry}:latest"], capture_output=True, text=True)
         print(push_image.stdout)
-    print(f"Pulling latest {docker} image:")
-    pull = subprocess.run(["docker", "pull", dockerregistry], capture_output=True, text=True)
+    print(f"Pulling latest {container} image:")
+    pull = subprocess.run(["docker", "pull", registry], capture_output=True, text=True)
     print(pull.stdout)
 
 
-def get_status(docker):
-    container = docker_client.containers.get(docker)
-    state = container.attrs["State"]
-    print(dedent(f"""
-    {docker} status:
-    {state["Status"]}
-    """))
+def get_status(container):
+    container = docker_client.containers.get(container)
+    state = container.attrs["State"]["Status"]
+    return state.capitalize()
 
 if args.container:
     if args.container == "all":
         for container in containers:
             print(container.upper())
+            print("=" * len(container.upper())) 
             remove_container(container)
             create_container(container)
-            get_status(container)
-            print('\n')
-        print('Status Summary:')
+            print(dedent(f"""Status
+            ------"""))
+            print(dedent(f"""{get_status(container)}
+            """))
+        print(dedent("""Status Summary
+        =============="""))
         for container in containers:
-            get_status(container)
-
+            print(f"{container}: {get_status(container)}")
     else:
+        print(args.container.upper())
+        print("=" * len(args.container.upper()))
         remove_container(args.container)
         create_container(args.container)
-        get_status(args.container)
+        print(dedent(f"""Status
+        ------"""))
+        print(get_status(args.container))
 
 elif args.image:
     if args.image == "all":
         for container in containers:
+            print(container.upper())
+            print("=" * len(container.upper())) 
             remove_container(container)
             update_image(container)
             create_container(container)
-            get_status(container)
-            print('\n')
-        print('Status Summary:')
+            print(dedent(f"""Status
+            ------"""))
+            print(dedent(f"""{get_status(container)}
+            """))
+        print(dedent("""Status Summary
+        =============="""))
         for container in containers:
-            get_status(container)
+            print(f"{container}: {get_status(container)}")
     else:
+        print(args.image.upper())
+        print("=" * len(args.image.upper()))
         remove_container(args.image)
         update_image(args.image)
         create_container(args.image)
-        get_status(args.image)
+        print(dedent(f"""Status
+        ------"""))
+        print(get_status(args.image))
