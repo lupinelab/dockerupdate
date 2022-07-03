@@ -68,7 +68,7 @@ if args.container:
         print("Status Summary")
         print("--------------")
         for container in containers:
-            print(f"{container}:\t\t{get_status(container)}")
+            print(f"{container}:{get_status(container):>25}")
     else:
         print(args.container.upper())
         print("=" * len(args.container.upper()))
@@ -87,7 +87,7 @@ elif args.image:
         print("Status Summary")
         print("==============")
         for container in containers:
-            print(f"{container}:\t\t{get_status(container)}")
+            print(f"{container}:{get_status(container):>25}")
     else:
         print(args.image.upper())
         print("=" * len(args.image.upper()))
