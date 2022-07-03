@@ -26,7 +26,7 @@ def remove_container(container):
 def create_container(container):   
     print(f"Creating {container} container:")
     create = subprocess.run(["sh", f"/home/{username}/dockercreate/{container}"], capture_output=True, text=True)
-    print(create.stdout)   
+    print(create.stdout.strip())   
     print(f"Starting {container} container:")
     start = subprocess.run(["docker", "start", container], capture_output=True, text=True)
     print("OK")
@@ -64,7 +64,7 @@ if args.container:
             print("=" * len(container.upper())) 
             remove_container(container)
             create_container(container)
-            print("Status")
+            print("/nStatus")
             print("------")
             print(dedent(f"""{get_status(container)}
             """))
@@ -77,7 +77,7 @@ if args.container:
         print("=" * len(args.container.upper()))
         remove_container(args.container)
         create_container(args.container)
-        print("Status")
+        print("/nStatus")
         print("------")
         print(get_status(args.container))
 
@@ -89,7 +89,7 @@ elif args.image:
             remove_container(container)
             update_image(container)
             create_container(container)
-            print("Status")
+            print("/nStatus")
             print("------")
             print(dedent(f"""{get_status(container)}
             """))
@@ -103,6 +103,6 @@ elif args.image:
         remove_container(args.image)
         update_image(args.image)
         create_container(args.image)
-        print("Status")
+        print("/nStatus")
         print("------")
         print(get_status(args.image))
