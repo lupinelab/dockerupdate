@@ -11,7 +11,7 @@ args = parser.parse_args()
 username = getlogin()
 docker_client = dkr.from_env()
 containers = listdir(f"/home/{username}/dockercreate")
-dockerfiles = listdir(f"/home/{username}/dockerbuild")
+builddir = listdir(f"/home/{username}/dockerbuild")
 
 
 def remove_container(container):
