@@ -24,7 +24,7 @@ def remove_container(container):
 
 
 def create_container(container):   
-    print(f"Creating {container} container:")
+    print(f"\nCreating {container} container:")
     create = subprocess.run(["sh", f"/home/{username}/dockercreate/{container}"], capture_output=True, text=True)
     print(create.stdout)   
     print(f"Starting {container} container:")
@@ -49,7 +49,7 @@ def update_image(container):
         print(push_image.stdout)
     print(f"Pulling latest {container} image:")
     pull = subprocess.run(["docker", "pull", registry], capture_output=True, text=True)
-    print(pull.stdout)
+    print(pull.stdout.strip())
 
 
 def get_status(container):
