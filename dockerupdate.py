@@ -1,6 +1,6 @@
 import argparse
 from os import listdir, getlogin
-import subprocess
+from subprocess import run, Popen, PIPE, STDOUT
 from textwrap import dedent
 import docker as dkr
 
