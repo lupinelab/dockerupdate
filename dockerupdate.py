@@ -39,7 +39,10 @@ def update_image(container):
         imageid = subprocess.run(["docker", "images", "-q", registry], capture_output=True, text=True).stdout.strip("\n")
     print(f"{registry} - {imageid}:")
     remove_image = subprocess.run(["docker", "rmi", "-f", imageid], capture_output=True, text=True)
-    print(remove_image.stdout)
+    while remove_image.poll() is None:
+        line = remove_image.stdout.readline()
+        print(line)
+    #print(remove_image.stdout)
     if container in builddir:
         print(f"Building {container} image:")
         build_image = subprocess.run(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", f"{registry}:latest"], capture_output=True, text=True)
