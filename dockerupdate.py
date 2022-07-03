@@ -18,7 +18,7 @@ def remove_container(container):
     print(f"Stopping {container} container:")
     stop = subprocess.run(["docker", "stop", container], capture_output=True, text=True)
     print("Success")
-    print(f"Removing {container} container:")
+    print(f"\nRemoving {container} container:")
     remove_container = subprocess.run(["docker", "rm", container], capture_output=True, text=True)
     print("Success")
 
@@ -26,14 +26,14 @@ def remove_container(container):
 def create_container(container):   
     print(f"Creating {container} container:")
     create = subprocess.run(["sh", f"/home/{username}/dockercreate/{container}"], capture_output=True, text=True)
-    print(create.stdout.strip())   
+    print(create.stdout)   
     print(f"Starting {container} container:")
     start = subprocess.run(["docker", "start", container], capture_output=True, text=True)
     print(get_status(container))
 
 
 def update_image(container):
-    print(f"Removing current {container} image:")
+    print(f"\nRemoving current {container} image:")
     with open(f"/home/{username}/dockercreate/{container}", "r") as dockercreatefile:
         registry = (dockercreatefile.readlines()[-1].strip("\n").strip())
         imageid = subprocess.run(["docker", "images", "-q", registry], capture_output=True, text=True).stdout.strip("\n")
