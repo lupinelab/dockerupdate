@@ -36,7 +36,7 @@ def update_image(container):
     print(f"\nRemoving current {container} image:")
     with open(f"/home/{username}/dockercreate/{container}", "r") as dockercreatefile:
         registry = (dockercreatefile.readlines()[-1].strip("\n").strip())
-        imageid = subprocess.run(["docker", "images", "-q", registry], capture_output=True, text=True).stdout.strip("\n")
+        imageid = subprocess.Popen(["docker", "images", "-q", registry], capture_output=True, text=True).stdout.strip("\n")
     print(f"{registry} - {imageid}:")
     remove_image = subprocess.Popen(["docker", "rmi", "-f", imageid], stdout=PIPE, stderr=STDOUT, text=True)
     #remove_image = subprocess.run(["docker", "rmi", "-f", imageid], capture_output=True, text=True)
@@ -46,14 +46,20 @@ def update_image(container):
     #print(remove_image.stdout)
     if container in builddir:
         print(f"Building {container} image:")
-        build_image = subprocess.run(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", f"{registry}:latest"], capture_output=True, text=True)
-        print(build_image.stdout)
+        build_image = subprocess.Popen(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", f"{registry}:latest"], stdout=PIPE, stderr=STDOUT, text=True)
+        while remove_image.poll() is None:
+            line = remove_image.stdout.readline()
+            print(line)
         print(f"Pushing {container} image:")
-        push_image = subprocess.run(["docker", "push", f"{registry}:latest"], capture_output=True, text=True)
-        print(push_image.stdout)
+        push_image = subprocess.Popen(["docker", "push", f"{registry}:latest"], stdout=PIPE, stderr=STDOUT, text=True)
+        while remove_image.poll() is None:
+            line = remove_image.stdout.readline()
+            print(line)
     print(f"Pulling latest {container} image:")
-    pull = subprocess.run(["docker", "pull", registry], capture_output=True, text=True)
-    print(pull.stdout.strip())
+    pull = subprocess.Popen(["docker", "pull", registry], stdout=PIPE, stderr=STDOUT, text=True)
+    while remove_image.poll() is None:
+        line = remove_image.stdout.readline()
+        print(line)
 
 
 def get_status(container):
