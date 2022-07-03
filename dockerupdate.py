@@ -38,7 +38,6 @@ def update_image(container):
         registry = (dockercreatefile.readlines()[-1].strip("\n").strip())
         imageid = subprocess.run(["docker", "images", "-q", registry], capture_output=True, text=True).stdout.strip("\n")
     print(f"{registry} - {imageid}:")
-    stdout = PIPE, 
     remove_image = subprocess.run(["docker", "rmi", "-f", imageid], stdout=PIPE, stderr=STDOUT, shell=True)
     #remove_image = subprocess.run(["docker", "rmi", "-f", imageid], capture_output=True, text=True)
     while remove_image.poll() is None:
