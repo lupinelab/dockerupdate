@@ -68,7 +68,7 @@ if args.container:
         print("Status Summary")
         print("--------------")
         for container in containers:
-            print(f"{container}{':' :<30}{get_status(container)}")
+            print(f"{container}{':' :<30-len(container)}{get_status(container)}")
     else:
         print(args.container.upper())
         print("=" * len(args.container.upper()))
