@@ -64,8 +64,8 @@ if args.container:
             print("=" * len(container.upper())) 
             remove_container(container)
             create_container(container)
-            print(dedent(f"""Status
-            ------"""))
+            print("Status")
+            print("------")
             print(dedent(f"""{get_status(container)}
             """))
         print(dedent("""Status Summary
@@ -77,8 +77,8 @@ if args.container:
         print("=" * len(args.container.upper()))
         remove_container(args.container)
         create_container(args.container)
-        print(dedent(f"""Status
-        ------"""))
+        print("Status")
+        print("------")
         print(get_status(args.container))
 
 elif args.image:
@@ -89,8 +89,8 @@ elif args.image:
             remove_container(container)
             update_image(container)
             create_container(container)
-            print(dedent(f"""Status
-            ------"""))
+            print("Status")
+            print("------")
             print(dedent(f"""{get_status(container)}
             """))
         print(dedent("""Status Summary
@@ -103,6 +103,6 @@ elif args.image:
         remove_container(args.image)
         update_image(args.image)
         create_container(args.image)
-        print(dedent(f"""Status
-        ------"""))
+        print("Status")
+        print("------")
         print(get_status(args.image))
