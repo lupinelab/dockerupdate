@@ -1,6 +1,6 @@
 import argparse
 from os import listdir, getlogin
-from subprocess import run, Popen, PIPE, STDOUT
+import subprocess
 from textwrap import dedent
 import docker as dkr
 
@@ -36,30 +36,20 @@ def update_image(container):
     print(f"\nRemoving current {container} image:")
     with open(f"/home/{username}/dockercreate/{container}", "r") as dockercreatefile:
         registry = (dockercreatefile.readlines()[-1].strip("\n").strip())
-        imageid = subprocess.Popen(["docker", "images", "-q", registry], capture_output=True, text=True).stdout.strip("\n")
+        imageid = subprocess.run(["docker", "images", "-q", registry], capture_output=True, text=True).stdout.strip("\n")
     print(f"{registry} - {imageid}:")
-    remove_image = subprocess.Popen(["docker", "rmi", "-f", imageid], stdout=PIPE, stderr=STDOUT, text=True)
-    #remove_image = subprocess.run(["docker", "rmi", "-f", imageid], capture_output=True, text=True)
-    while remove_image.poll() is None:
-        line = remove_image.stdout.readline()
-        print(line)
-    #print(remove_image.stdout)
+    remove_image = subprocess.run(["docker", "rmi", "-f", imageid], capture_output=True, text=True)
+    print(remove_image.stdout)
     if container in builddir:
         print(f"Building {container} image:")
-        build_image = subprocess.Popen(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", f"{registry}:latest"], stdout=PIPE, stderr=STDOUT, text=True)
-        while remove_image.poll() is None:
-            line = remove_image.stdout.readline()
-            print(line)
+        build_image = subprocess.run(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", f"{registry}:latest"], capture_output=True, text=True)
+        print(build_image.stdout)
         print(f"Pushing {container} image:")
-        push_image = subprocess.Popen(["docker", "push", f"{registry}:latest"], stdout=PIPE, stderr=STDOUT, text=True)
-        while remove_image.poll() is None:
-            line = remove_image.stdout.readline()
-            print(line)
+        push_image = subprocess.run(["docker", "push", f"{registry}:latest"], capture_output=True, text=True)
+        print(push_image.stdout)
     print(f"Pulling latest {container} image:")
-    pull = subprocess.Popen(["docker", "pull", registry], stdout=PIPE, stderr=STDOUT, text=True)
-    while remove_image.poll() is None:
-        line = remove_image.stdout.readline()
-        print(line)
+    pull = subprocess.run(["docker", "pull", registry], capture_output=True, text=True)
+    print(pull.stdout.strip())
 
 
 def get_status(container):
