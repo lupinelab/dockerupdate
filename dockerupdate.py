@@ -1,7 +1,6 @@
 import argparse
 from os import listdir, getlogin
 import subprocess
-from textwrap import dedent
 import docker as dkr
 
 parser = argparse.ArgumentParser(description='Update docker images or rebuild container(s)')
@@ -12,6 +11,12 @@ username = getlogin()
 docker_client = dkr.from_env()
 containers = listdir(f"/home/{username}/dockercreate")
 builddir = listdir(f"/home/{username}/dockerbuild")
+buildfromrepo = {}
+with open(f"/home/{username}/dockerbuild/buildable") as f:
+    buildables = f.readlines()
+    for line in buildables:
+        name, repo = line.split(",")
+        buildfromrepo[name] = repo.strip()
 
 
 def remove_container(container):
@@ -43,6 +48,13 @@ def update_image(container):
     if container in builddir:
         print(f"Building {container} image:")
         build_image = subprocess.run(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", f"{registry}:latest"], capture_output=True, text=True)
+        print(build_image.stdout)
+        print(f"Pushing {container} image:")
+        push_image = subprocess.run(["docker", "push", f"{registry}:latest"], capture_output=True, text=True)
+        print(push_image.stdout)
+    else:
+        print(f"Building {container} image:")
+        build_image = subprocess.run(["docker", "build", buildfromrepo[container], "-t", f"{registry}:latest"], capture_output=True, text=True)
         print(build_image.stdout)
         print(f"Pushing {container} image:")
         push_image = subprocess.run(["docker", "push", f"{registry}:latest"], capture_output=True, text=True)
