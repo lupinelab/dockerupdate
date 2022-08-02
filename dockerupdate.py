@@ -6,6 +6,7 @@ import docker as dkr
 parser = argparse.ArgumentParser(description='Update docker images or rebuild container(s)')
 parser.add_argument("-i", "--image", type=str, nargs='?', const="all", help="update image and recreate container")
 parser.add_argument("-c", "--container", type=str, nargs='?', const="all", help="recreate container")
+parser.add_argument("-b", "--build", type=str, nargs='?', help="recreate container")
 args = parser.parse_args()
 username = getlogin()
 docker_client = dkr.from_env()
@@ -17,6 +18,17 @@ with open(f"/home/{username}/dockerbuild/buildable") as f:
     for line in buildables:
         name, repo = line.split(",")
         buildfromrepo[name] = repo.strip()
+
+
+def build_image(container):
+    if container in builddir:
+        print(f"Building {container} image:")
+        build_image = subprocess.run(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", f"{registry}:latest"], capture_output=True, text=True)
+        print(build_image.stdout)
+    else:
+        print(f"Building {container} image:")
+        build_image = subprocess.run(["docker", "build", buildfromrepo[container], "-t", f"{registry}:latest"], capture_output=True, text=True)
+        print(build_image.stdout)
 
 
 def remove_container(container):
@@ -106,3 +118,8 @@ elif args.image:
         remove_container(args.image)
         update_image(args.image)
         create_container(args.image)
+
+elif args.build:
+    print(args.build.upper())
+    print("=" * len(args.build.upper()))
+    build_image(args.build)
