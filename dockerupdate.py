@@ -23,11 +23,11 @@ with open(f"/home/{username}/dockerbuild/buildable") as f:
 def build_image(container):
     if container in builddir:
         print(f"Building {container} image:")
-        build_image = subprocess.run(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", "docker.lupinelab.co.uk:latest"], capture_output=True, text=True)
+        build_image = subprocess.run(["docker", "build", f"/home/{username}/dockerbuild/{container}/", "-t", f"{container}:latest"], capture_output=True, text=True)
         print(build_image.stdout)
     else:
         print(f"Building {container} image:")
-        build_image = subprocess.run(["docker", "build", buildfromrepo[container], "-t", "docker.lupinelab.co.uk:latest"], capture_output=True, text=True)
+        build_image = subprocess.run(["docker", "build", buildfromrepo[container], "-t", f"{container}:latest"], capture_output=True, text=True)
         print(build_image.stdout)
 
 
