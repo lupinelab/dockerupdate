@@ -6,7 +6,7 @@ import docker as dkr
 parser = argparse.ArgumentParser(description='Update docker images or rebuild container(s)')
 parser.add_argument("-i", "--image", type=str, nargs='?', const="all", help="update image and recreate container")
 parser.add_argument("-c", "--container", type=str, nargs='?', const="all", help="recreate container")
-parser.add_argument("-b", "--build", type=str, nargs='?', help="recreate container")
+parser.add_argument("-b", "--build", type=str, nargs='?', help="build image")
 args = parser.parse_args()
 username = getlogin()
 docker_client = dkr.from_env()
