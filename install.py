@@ -3,7 +3,7 @@ import os
 import shutil
 import stat
 
-def install_script():
+def install():
     # make dockerupdate executeable and move to /usr/local/bin
     os.chmod('dist/dockerupdate', os.stat('dist/dockerupdate').st_mode | stat.S_IXOTH)
     shutil.copy('dist/dockerupdate', '/usr/local/bin/dockerupdate')
@@ -13,4 +13,4 @@ def install_script():
 if os.getuid() != 0:
     print("Please run as elevated user")
 else:
-    install_script()
+    install()
