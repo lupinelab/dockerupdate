@@ -64,7 +64,7 @@ def update_image(container):
         print(f"Pushing {container} image:")
         push_image = subprocess.run(["docker", "push", f"{registry}:latest"], capture_output=True, text=True)
         print(push_image.stdout)
-    else:
+    elif container in buildfromrepo:
         print(f"Building {container} image:")
         build_image = subprocess.run(["docker", "build", buildfromrepo[container], "-t", f"{registry}:latest"], capture_output=True, text=True)
         print(build_image.stdout)
