@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/lupinelab/dockerupdate/internal"
 	"github.com/lupinelab/dockerupdate/pkg"
@@ -12,6 +14,7 @@ import (
 
 type Target struct {
 	target string
+	name   string
 }
 
 func (t *Target) updateContainer() {
@@ -35,6 +38,16 @@ func (t *Target) buildImage() {
 	}
 }
 
+func (t *Target) containerStatus() (string, error) {
+	status, err := pkg.ContainerStatus(t.target)
+	return status, err
+}
+
+func NewTarget(target string) *Target {
+	name := filepath.Base(target)
+	return &Target{target: target, name: name}
+}
+
 func init() {
 	dockerupdateCmd.PersistentFlags().BoolP("container", "c", false, "Update container")
 	dockerupdateCmd.PersistentFlags().BoolP("image", "i", false, "Update image")
@@ -50,29 +63,60 @@ var dockerupdateCmd = &cobra.Command{
 	Short: "Perform a task on a container/image",
 	// Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// Check arg(s)
-		if len(args) < 1 {
-			fmt.Println("Please provide a container/image name")
-			return
-		}
-		flag := checkFlags(cmd.Flags())
-		// the gubbins
-		for i := range args {
-			composeTarget, err := internal.ValidateArg(args[i])
+		alltargets := false
+		if len(args) == 0 || args[0] == "all" {
+			newargs, err := internal.AllTargets()
 			if err != nil {
 				fmt.Print(err.Error())
+				return
 			}
-			target := Target{composeTarget}
+			args = newargs
+			alltargets = true
+		}
+		targets := args
+		flag := checkFlags(cmd.Flags())
+		// the gubbins
+		for i := range targets {
+			composeTarget, err := internal.ValidateArg(targets[i])
+			if err != nil {
+				fmt.Print(err.Error())
+				continue
+			}
+			target := NewTarget(composeTarget)
 			switch flag {
 			case "container":
+				fmt.Printf(strings.ToUpper(target.name + "\n" + strings.Repeat("=", len(target.name)) + "\n"))
 				target.updateContainer()
+				status, err := target.containerStatus()
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				fmt.Printf("Starting %s ... %s\n", target.name, status)
 				break
 			case "image":
+				fmt.Printf(strings.ToUpper(target.name + "\n" + strings.Repeat("=", len(target.name)) + "\n"))
 				target.updateImage()
+				status, err := target.containerStatus()
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				fmt.Printf("Starting %s ... %s\n", target.name, status)
 				break
 			case "build":
+				fmt.Printf(strings.ToUpper(target.name + "\n" + strings.Repeat("=", len(target.name)) + "\n"))
 				target.buildImage()
 				break
+			}
+		}
+		if alltargets {
+			fmt.Println("\nStatus Summary\n==============")
+			for i := range targets {
+				status, err := pkg.ContainerStatus(targets[i])
+				if err != nil {
+					fmt.Println(err.Error())
+					continue
+				}
+				fmt.Printf("%s:"+"%s"+"%s\n", targets[i], strings.Repeat(" ", len(targets[i])), status)
 			}
 		}
 	},

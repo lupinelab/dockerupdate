@@ -8,10 +8,10 @@ import (
 func BuildImage(targetDir string) error {
 	build := exec.Command("docker-compose", "build")
 	build.Dir = targetDir
-	output, err := build.Output()
+	buildOutput, err := build.CombinedOutput()
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
+	fmt.Printf(string(buildOutput[:]))
 	return nil
 }

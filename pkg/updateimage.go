@@ -7,20 +7,21 @@ import (
 
 func UpdateImage(targetDir string) error {
 	var output []byte
-	pull := exec.Command("docker-compose", "pull")
+	pullcmd := "docker-compose pull"
+	pull := exec.Command("bash", "-c", pullcmd)
 	pull.Dir = targetDir
-	pullOutput, err := pull.Output()
+	pullOutput, err := pull.CombinedOutput()
 	if err != nil {
 		return err
 	}
-	output = append(output, pullOutput...)
+	fmt.Printf(string(pullOutput))
 	recreate := exec.Command("docker-compose", "up", "--force-recreate", "-d")
 	recreate.Dir = targetDir
-	recreateOutput, err := recreate.Output()
+	recreateOutput, err := recreate.CombinedOutput()
 	if err != nil {
 		return err
 	}
 	output = append(output, recreateOutput...)
-	fmt.Println(output)
+	fmt.Printf(string(recreateOutput[:]))
 	return nil
 }

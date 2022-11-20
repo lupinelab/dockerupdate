@@ -18,9 +18,6 @@ func ValidateArg(arg string) (string, error) {
 		err := fmt.Errorf("Error: %s is not a directory", targetDir)
 		return "", err
 	}
-	// if targetDir.IsDir() {
-	// 	fmt.Printf("Error: %s is not a directory", targetDir)
-	// }
 	// Check for docker-compose.yml or docker-compose.yaml files in targetDir
 	f, err := os.Open(targetDir)
 	if err != nil {
@@ -38,6 +35,6 @@ func ValidateArg(arg string) (string, error) {
 			}
 		}
 	}
-	err = fmt.Errorf("Error: No valid docker-compose files found in %s", targetDir)
+	err = fmt.Errorf("Error: No valid docker-compose files found in %s\n", targetDir)
 	return "", err
 }

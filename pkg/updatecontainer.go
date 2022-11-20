@@ -6,10 +6,9 @@ import (
 )
 
 func UpdateContainer(targetDir string) error {
-	fmt.Println("test")
 	recreate := exec.Command("docker-compose", "up", "--force-recreate", "-d")
 	recreate.Dir = targetDir
-	recreateOutput, err := recreate.Output()
+	recreateOutput, err := recreate.CombinedOutput()
 	if err != nil {
 		return err
 	}
