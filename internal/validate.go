@@ -6,20 +6,20 @@ import (
 	"path/filepath"
 )
 
-func ValidateArg(arg string) (string, error) {
-	targetDir := filepath.Join(DockerDir(), arg)
+func ValidateArg(target string) (string, error) {
+	targetAbs := filepath.Join(DockerDir(), target)
 	// Check arg is in dockerDir folder
-	fileInfo, err := os.Stat(targetDir)
+	fileInfo, err := os.Stat(targetAbs)
 	if err != nil {
 		return "", err
 	}
 	// Check if arg is a directory
 	if fileInfo.IsDir() == false {
-		err := fmt.Errorf("Error: %s is not a directory", targetDir)
+		err := fmt.Errorf("Error: %s is not a directory", targetAbs)
 		return "", err
 	}
-	// Check for docker-compose.yml or docker-compose.yaml files in targetDir
-	f, err := os.Open(targetDir)
+	// Check for docker-compose.yml or docker-compose.yaml files in targetDir and return absolute path to
+	f, err := os.Open(targetAbs)
 	if err != nil {
 		return "", err
 	}
@@ -30,11 +30,11 @@ func ValidateArg(arg string) (string, error) {
 	for _, p := range files {
 		if p.IsDir() == false {
 			if p.Name() == "docker-compose.yml" || p.Name() == "docker-compose.yaml" {
-				composeTarget := targetDir
+				composeTarget := targetAbs
 				return composeTarget, err
 			}
 		}
 	}
-	err = fmt.Errorf("Error: No valid docker-compose files found in %s\n", targetDir)
+	err = fmt.Errorf("Error: No valid docker-compose files found in %s\n", targetAbs)
 	return "", err
 }
