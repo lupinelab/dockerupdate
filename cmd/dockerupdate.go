@@ -19,11 +19,6 @@ func init() {
 	dockerupdateCmd.MarkFlagsMutuallyExclusive("container", "image")
 	dockerupdateCmd.MarkFlagsMutuallyExclusive("image", "build")
 	dockerupdateCmd.PersistentFlags().Lookup("help").Hidden = true
-	if dockerupdateCmd.Flag("all").Changed {
-		dockerupdateCmd.MarkFlagsRequiredTogether("all", "build")
-		dockerupdateCmd.MarkFlagsRequiredTogether("all", "image")
-		dockerupdateCmd.MarkFlagsRequiredTogether("all", "container")
-	}
 	dockerupdateCmd.AddCommand(completionCmd)
 	dockerupdateCmd.CompletionOptions.DisableDefaultCmd = true
 	cobra.EnableCommandSorting = false
@@ -51,12 +46,10 @@ If the docker-compose binary is not in $PATH and error will be returned.`,
 		// Assign and validate targets
 		targets := args
 		if cmd.Flag("all").Changed {
+			// Check for another flag if "all" flag is set
 			var flags []string
-			// Check for a flag if "all" flag is set
 			cmd.Flags().Visit(func(f *pflag.Flag) {
-				var setFlags []string
-				setFlags = append(setFlags, f.Name)
-				flags = setFlags
+				flags = append(flags, f.Name)
 			})
 			if len(flags) == 1 {
 				fmt.Println("Error: if the flag [all] is set one of the following flags must also be set: [build image container]")
