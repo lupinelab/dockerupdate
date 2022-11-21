@@ -26,7 +26,7 @@ func (t *Target) UpdateContainer() error {
 }
 
 func (t *Target) UpdateImage() error {
-	pull := exec.Command("docker-compose", "build")
+	pull := exec.Command("docker-compose", "pull")
 	pull.Dir = t.target
 	pullOutput, err := pull.CombinedOutput()
 	if err != nil {
