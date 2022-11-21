@@ -115,7 +115,7 @@ If the docker-compose binary is not in $PATH and error will be returned.`,
 					fmt.Println(err.Error())
 					continue
 				}
-				fmt.Printf("%s:"+"%s"+"%s\n", target.Name, strings.Repeat(" ", len(target.Name)), status)
+				fmt.Printf("%s:"+"%s"+"%s\n", target.Name, strings.Repeat(" ", (30-len(target.Name))), status)
 			}
 		}
 	},
