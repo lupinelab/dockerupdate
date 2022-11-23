@@ -5,8 +5,8 @@ import stat
 
 def install():
     # make dockerupdate executeable and move to /usr/local/bin
-    os.chmod('dist/dockerupdate', os.stat('dist/dockerupdate').st_mode | stat.S_IXOTH)
-    shutil.copy('dist/dockerupdate', '/usr/local/bin/dockerupdate')
+    os.chmod('dockerupdate', os.stat('dockerupdate').st_mode | stat.S_IXOTH)
+    shutil.copy('dockerupdate', '/usr/local/bin/dockerupdate')
     # move completion script to /etc/bash_completion.d/
     shutil.copy('dockerupdate_completion', '/etc/bash_completion.d/dockerupdate_completion')
 
