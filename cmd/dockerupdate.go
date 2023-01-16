@@ -28,8 +28,8 @@ var dockerupdateCmd = &cobra.Command{
 	Use:   "dockerupdate CONTAINER/IMAGE",
 	Short: "Perform a docker-compose task on a container/image",
 	Long: `Perform a docker compose task on a container/image in the $HOME/docker/$1 directory. 
-If the "all" flag is passed no arguement is required and all directories in $HOME/docker will be processed.
-If the docker-compose binary is not in $PATH and error will be returned.`,
+No arguement is required if the "all" flag is passed, all directories in $HOME/docker will be processed.
+If the docker-compose binary is not in $PATH an error will be returned.`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		// If no arg and "all" flag has not been setsudo show help
