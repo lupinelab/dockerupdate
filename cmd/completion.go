@@ -27,7 +27,7 @@ var completionCmd = &cobra.Command{
 }
 
 func dockerupdateBashCompletion(w io.Writer) error {
-	bashCompletion := "#/usr/bin/env bash\n\ncomplete -C 'makelist() { ls $HOME/docker/*/; }; filter() { makelist | grep '^$2' | sort -u; }; filter' dockerupdate"
+	bashCompletion := "#/usr/bin/env bash\n\ncomplete -C 'makelist() { ls $HOME/docker; }; filter() { makelist | grep '^$2' | sort -u; }; filter' dockerupdate"
 	buf := new(bytes.Buffer)
 	if len(bashCompletion) > 0 {
 		buf.WriteString(bashCompletion + "\n")
