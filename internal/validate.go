@@ -4,10 +4,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
-func ValidateArg(target string) (string, error) {
-	targetAbs := filepath.Join(DockerDir(), target)
+func ValidateArg(targetdir string, target string) (string, error) {
+	if targetdir == target {
+		target = filepath.Base(targetdir)
+		targetdir = strings.Split(targetdir, target)[0]
+	}
+	targetAbs := filepath.Join(targetdir, target)
 	// Check arg is in dockerDir folder
 	fileInfo, err := os.Stat(targetAbs)
 	if err != nil {

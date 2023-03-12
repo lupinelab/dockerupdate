@@ -4,9 +4,13 @@ import (
 	"os"
 )
 
-func AllTargets() ([]string, error) {
+func AllTargets(targetdir string) ([]string, error) {
 	var allTargets []string
-	f, err := os.Open(DockerDir())
+	targetDir, err := TargetDir(targetdir)
+	if err != nil {
+		return nil, err
+	}
+	f, err := os.Open(targetDir)
 	if err != nil {
 		return nil, err
 	}

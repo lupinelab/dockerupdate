@@ -11,29 +11,35 @@ import (
 )
 
 func init() {
-	dockerupdateCmd.PersistentFlags().BoolP("container", "c", false, "update container")
-	dockerupdateCmd.PersistentFlags().BoolP("image", "i", false, "update image")
-	dockerupdateCmd.PersistentFlags().BoolP("build", "b", false, "build image")
-	dockerupdateCmd.PersistentFlags().BoolP("all", "a", false, "all targets")
+	dockerupdateCmd.PersistentFlags().BoolP("container", "c", false, "Update container")
+	dockerupdateCmd.PersistentFlags().BoolP("image", "i", false, "Update image")
+	dockerupdateCmd.PersistentFlags().BoolP("build", "b", false, "Build image")
+	dockerupdateCmd.PersistentFlags().BoolP("all", "a", false, "All targets")
 	dockerupdateCmd.PersistentFlags().BoolP("help", "h", false, "Print usage")
 	dockerupdateCmd.MarkFlagsMutuallyExclusive("container", "image")
 	dockerupdateCmd.MarkFlagsMutuallyExclusive("image", "build")
 	dockerupdateCmd.PersistentFlags().Lookup("help").Hidden = true
-	dockerupdateCmd.AddCommand(completionCmd)
-	dockerupdateCmd.CompletionOptions.DisableDefaultCmd = true
 	cobra.EnableCommandSorting = false
 }
 
 var dockerupdateCmd = &cobra.Command{
-	Use:   "dockerupdate CONTAINER/IMAGE",
+	Use:   "dockerupdate TARGETDIR [CONTAINER]...",
 	Short: "Perform a docker-compose task on a container/image",
-	Long: `Perform a docker compose task on a container/image in the $HOME/docker/$1 directory. 
-No arguement is required if the "all" flag is passed, all directories in $HOME/docker will be processed.
-If the docker-compose binary is not in $PATH an error will be returned.`,
+	Long: `Perform a docker compose task using a docker-compose file in the TARGETDIR or each TARGETDIR/CONTAINER directory. 
+No CONTAINER argument is required if the "all" flag is passed, each subdirectory of the TARGETDIR will be processed.`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		// If no arg and "all" flag has not been setsudo show help
+		// If no arg and "all" flag has not been set show help
 		if len(args) == 0 && !cmd.Flag("all").Changed {
+			cmd.Help()
+			return
+		}
+		// Get the flags
+		var flags []string
+		cmd.Flags().Visit(func(f *pflag.Flag) {
+			flags = append(flags, f.Name)
+		})
+		if len(flags) == 0 {
 			cmd.Help()
 			return
 		}
@@ -44,21 +50,32 @@ If the docker-compose binary is not in $PATH an error will be returned.`,
 			return
 		}
 		// Assign and validate targets
-		targets := args
+		targetDir, err := internal.TargetDir(args[0])
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		
+		var targets []string
+		targets = append(targets, targetDir)
+		if len(args) > 1 {
+			targets = args[1:]
+		}
+
 		if cmd.Flag("all").Changed {
 			// Check for another flag if "all" flag is set
-			var flags []string
-			cmd.Flags().Visit(func(f *pflag.Flag) {
-				flags = append(flags, f.Name)
-			})
 			if len(flags) == 1 {
 				fmt.Println("Error: if the flag [all] is set one of the following flags must also be set: [build image container]")
 				return
 			}
 			// Get all potential targets
-			allTargets, err := internal.AllTargets()
+			allTargets, err := internal.AllTargets(targetDir)
 			if err != nil {
 				fmt.Print(err.Error())
+				return
+			}
+			if len(allTargets) == 0 {
+				fmt.Printf("Error: No valid target directories in %s\n", targetDir)
 				return
 			}
 			targets = allTargets
@@ -66,7 +83,7 @@ If the docker-compose binary is not in $PATH an error will be returned.`,
 		// Make target list
 		var targetList []internal.Target
 		for i := range targets {
-			composeTarget, err := internal.ValidateArg(targets[i])
+			composeTarget, err := internal.ValidateArg(targetDir, targets[i])
 			if err != nil {
 				fmt.Println(err.Error())
 				continue
