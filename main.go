@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/lupinelab/dockerupdate/cmd"
+	"github.com/lupinelab/dockerupdate/cmd/dockerupdate"
 )
 
 func main() {
-	cmd.Execute()
+	dockerupdate.Execute()
 }

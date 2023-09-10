@@ -1,11 +1,11 @@
-package cmd
+package dockerupdate
 
 import (
 	"fmt"
 	"os/exec"
 	"strings"
 
-	"github.com/lupinelab/dockerupdate/internal"
+	"github.com/lupinelab/dockerupdate/internal/targets"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -50,16 +50,16 @@ No CONTAINER argument is required if the "all" flag is passed, each subdirectory
 			return
 		}
 		// Assign and validate targets
-		targetDir, err := internal.TargetDir(args[0])
+		targetDir, err := targets.TargetDir(args[0])
 		if err != nil {
 			fmt.Println(err.Error())
 			return
 		}
 		
-		var targets []string
-		targets = append(targets, targetDir)
+		var allTargets []string
+		allTargets = append(allTargets, targetDir)
 		if len(args) > 1 {
-			targets = args[1:]
+			allTargets = args[1:]
 		}
 
 		if cmd.Flag("all").Changed {
@@ -69,7 +69,7 @@ No CONTAINER argument is required if the "all" flag is passed, each subdirectory
 				return
 			}
 			// Get all potential targets
-			allTargets, err := internal.AllTargets(targetDir)
+			potTargets, err := targets.AllTargets(targetDir)
 			if err != nil {
 				fmt.Print(err.Error())
 				return
@@ -78,22 +78,22 @@ No CONTAINER argument is required if the "all" flag is passed, each subdirectory
 				fmt.Printf("Error: No valid target directories in %s\n", targetDir)
 				return
 			}
-			targets = allTargets
+			allTargets = potTargets
 		}
 		// Make target list
-		var targetList []internal.Target
-		for i := range targets {
-			composeTarget, err := internal.ValidateArg(targetDir, targets[i])
+		var targetList []targets.Target
+		for _, target := range allTargets {
+			composeTarget, err := targets.ValidateArg(targetDir, target)
 			if err != nil {
 				fmt.Println(err.Error())
 				continue
 			}
-			target := internal.NewTarget(composeTarget)
+			target := targets.NewTarget(composeTarget)
 			targetList = append(targetList, *target)
 		}
 		// The gubbins
 		for _, target := range targetList {
-			fmt.Printf(strings.ToUpper(target.Name + "\n" + strings.Repeat("=", len(target.Name)) + "\n"))
+			fmt.Print(strings.ToUpper(target.Name + "\n" + strings.Repeat("=", len(target.Name)) + "\n"))
 			if cmd.Flag("build").Changed {
 				err := target.BuildImage()
 				if err != nil {
