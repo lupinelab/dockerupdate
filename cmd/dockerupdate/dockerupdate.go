@@ -7,18 +7,18 @@ import (
 
 	"github.com/lupinelab/dockerupdate/internal/targets"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 func init() {
-	dockerupdateCmd.PersistentFlags().BoolP("container", "c", false, "Update container")
-	dockerupdateCmd.PersistentFlags().BoolP("image", "i", false, "Update image")
-	dockerupdateCmd.PersistentFlags().BoolP("build", "b", false, "Build image")
+	dockerupdateCmd.PersistentFlags().BoolP("container", "c", false, "Update container(s)")
+	dockerupdateCmd.PersistentFlags().BoolP("image", "i", false, "Update image(s)")
+	dockerupdateCmd.PersistentFlags().BoolP("build", "b", false, "Build image(s)")
 	dockerupdateCmd.PersistentFlags().BoolP("all", "a", false, "All targets")
 	dockerupdateCmd.PersistentFlags().BoolP("help", "h", false, "Print usage")
 	dockerupdateCmd.MarkFlagsMutuallyExclusive("container", "image")
 	dockerupdateCmd.MarkFlagsMutuallyExclusive("image", "build")
 	dockerupdateCmd.PersistentFlags().Lookup("help").Hidden = true
+	dockerupdateCmd.SilenceUsage = true
 	cobra.EnableCommandSorting = false
 }
 
@@ -27,33 +27,28 @@ var dockerupdateCmd = &cobra.Command{
 	Short: "Perform a docker-compose task on a container/image",
 	Long: `Perform a docker compose task using a docker-compose file in the TARGETDIR or each TARGETDIR/CONTAINER directory. 
 No CONTAINER argument is required if the "all" flag is passed, each subdirectory of the TARGETDIR will be processed.`,
-	Args: cobra.ArbitraryArgs,
-	Run: func(cmd *cobra.Command, args []string) {
-		// If no arg and "all" flag has not been set show help
-		if len(args) == 0 && !cmd.Flag("all").Changed {
-			cmd.Help()
-			return
+	Args: func(cmd *cobra.Command, args []string) error {
+		if cmd.Flag("all").Changed {
+			return cobra.MinimumNArgs(1)(cmd, args)
 		}
-		// Get the flags
-		var flags []string
-		cmd.Flags().Visit(func(f *pflag.Flag) {
-			flags = append(flags, f.Name)
-		})
-		if len(flags) == 0 {
-			cmd.Help()
-			return
+
+		return cobra.MinimumNArgs(2)(cmd, args)
+	},
+	PreRun: func(cmd *cobra.Command, _ []string) {
+		if cmd.Flag("all").Changed {
+			cmd.MarkFlagsOneRequired("build", "container", "image")
 		}
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		//  Check for docker-compose binary in $PATH
 		_, err := exec.LookPath("docker-compose")
 		if err != nil {
-			fmt.Println(err.Error())
-			return
+			return err
 		}
 		// Assign and validate targets
 		targetDir, err := targets.TargetDir(args[0])
 		if err != nil {
-			fmt.Println(err.Error())
-			return
+			return err
 		}
 		
 		var allTargets []string
@@ -63,20 +58,13 @@ No CONTAINER argument is required if the "all" flag is passed, each subdirectory
 		}
 
 		if cmd.Flag("all").Changed {
-			// Check for another flag if "all" flag is set
-			if len(flags) == 1 {
-				fmt.Println("Error: if the flag [all] is set one of the following flags must also be set: [build image container]")
-				return
-			}
 			// Get all potential targets
 			potTargets, err := targets.AllTargets(targetDir)
 			if err != nil {
-				fmt.Print(err.Error())
-				return
+				return err
 			}
 			if len(allTargets) == 0 {
-				fmt.Printf("Error: No valid target directories in %s\n", targetDir)
-				return
+				return fmt.Errorf("Error: No valid target directories in %s\n", targetDir)
 			}
 			allTargets = potTargets
 		}
@@ -85,7 +73,7 @@ No CONTAINER argument is required if the "all" flag is passed, each subdirectory
 		for _, target := range allTargets {
 			composeTarget, err := targets.ValidateArg(targetDir, target)
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Println(err)
 				continue
 			}
 			target := targets.NewTarget(composeTarget)
@@ -97,28 +85,33 @@ No CONTAINER argument is required if the "all" flag is passed, each subdirectory
 			if cmd.Flag("build").Changed {
 				err := target.BuildImage()
 				if err != nil {
-					fmt.Println(err.Error())
+					fmt.Println(err)
+					continue
 				}
 			}
 			if cmd.Flag("image").Changed {
 				err := target.UpdateImage()
 				if err != nil {
-					fmt.Println(err.Error())
+					fmt.Println(err)
+					continue
 				}
 				status, err := target.ContainerStatus()
 				if err != nil {
-					fmt.Println(err.Error())
+					fmt.Println(err)
+					continue
 				}
 				fmt.Printf("Starting %s ... %s\n", target.Name, status)
 			}
 			if cmd.Flag("container").Changed {
 				err := target.UpdateContainer()
 				if err != nil {
-					fmt.Println(err.Error())
+					fmt.Println(err)
+					continue
 				}
 				status, err := target.ContainerStatus()
 				if err != nil {
-					fmt.Println(err.Error())
+					fmt.Println(err)
+					continue
 				}
 				fmt.Printf("Starting %s ... %s\n", target.Name, status)
 			}
@@ -129,12 +122,14 @@ No CONTAINER argument is required if the "all" flag is passed, each subdirectory
 			for _, target := range targetList {
 				status, err := target.ContainerStatus()
 				if err != nil {
-					fmt.Println(err.Error())
+					fmt.Println(err)
 					continue
 				}
 				fmt.Printf("%s:"+"%s"+"%s\n", target.Name, strings.Repeat(" ", (30-len(target.Name))), status)
 			}
 		}
+
+		return nil
 	},
 }
 

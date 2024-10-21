@@ -22,7 +22,7 @@ func (t *Target) UpdateContainer() error {
 		return err
 	}
 	fmt.Printf(string(recreateOutput[:]))
-	return err
+	return nil
 }
 
 func (t *Target) UpdateImage() error {
@@ -40,7 +40,7 @@ func (t *Target) UpdateImage() error {
 		return err
 	}
 	fmt.Printf(string(recreateOutput[:]))
-	return err
+	return nil
 }
 
 func (t *Target) BuildImage() error {
@@ -51,7 +51,7 @@ func (t *Target) BuildImage() error {
 		return err
 	}
 	fmt.Printf(string(buildOutput[:]))
-	return err
+	return nil
 }
 
 func (t *Target) ContainerStatus() (string, error) {
